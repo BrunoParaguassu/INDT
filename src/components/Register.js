@@ -7,7 +7,7 @@ const Register = () => {
         sobrenome: '',
         email: '',
         senha: '',
-        nivel_acesso: 'admin'
+        nivel_acesso: 'admin' // Valor padrão para o campo de seleção
     });
     const [error, setError] = useState('');
 
@@ -22,13 +22,10 @@ const Register = () => {
     const handleSubmit = async (event) => {
         event.preventDefault();
         try {
-            // Faz a requisição para registrar um novo usuário
             const response = await axios.post('http://localhost:5000/register', formData);
             console.log('Novo usuário registrado:', response.data);
             setError('');
-            // Redirecionar o usuário para a página de login após o registro bem-sucedido
-            // Aqui você pode definir a lógica de redirecionamento para a página desejada após o registro
-            window.location.href = '/login'; // Redireciona para a página de login
+            window.location.href = '/login';
         } catch (error) {
             console.error('Erro ao registrar novo usuário:', error);
             setError('Erro ao registrar novo usuário.');
@@ -83,7 +80,7 @@ const Register = () => {
                                 <div className="mb-3">
                                     <label htmlFor="senha" className="form-label">Senha:</label>
                                     <input
-                                        type="senha"
+                                        type="password"
                                         className="form-control"
                                         id="senha"
                                         name="senha"
@@ -91,6 +88,20 @@ const Register = () => {
                                         onChange={handleInputChange}
                                         required
                                     />
+                                </div>
+                                {/* Campo select para o nível de acesso */}
+                                <div className="mb-3">
+                                    <label htmlFor="nivel_acesso" className="form-label">Nível de Acesso:</label>
+                                    <select
+                                        className="form-select"
+                                        id="nivel_acesso"
+                                        name="nivel_acesso"
+                                        value={formData.nivel_acesso}
+                                        onChange={handleInputChange}
+                                    >
+                                        <option value="admin">Admin</option>
+                                        <option value="comum">Comum</option>
+                                    </select>
                                 </div>
                                 <div className="d-grid">
                                     <button type="submit" className="btn btn-primary">Registrar</button>

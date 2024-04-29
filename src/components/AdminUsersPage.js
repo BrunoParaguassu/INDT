@@ -1,35 +1,28 @@
-// AdminUsersPage.js
-
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom'; // Importa o useNavigate do react-router-dom
+import { useNavigate } from 'react-router-dom';
 
 const AdminUsersPage = () => {
   const [users, setUsers] = useState([]);
-  const navigate = useNavigate(); // Inicializa o useNavigate
-
+  const navigate = useNavigate();
+  
   useEffect(() => {
-    // Função para carregar os usuários ao montar o componente
     const fetchUsers = async () => {
       try {
-        // Faz a requisição para obter a lista de usuários
         const response = await axios.get('http://localhost:5000/users');
-        setUsers(response.data); // Atualiza o estado com os usuários recebidos
+        setUsers(response.data);
       } catch (error) {
         console.error('Erro ao obter usuários:', error);
       }
     };
 
-    fetchUsers(); // Chama a função para carregar os usuários
+    fetchUsers();
   }, []);
 
   const handleUpdateUser = async (userId) => {
     try {
-      // Faz a requisição para atualizar o usuário com o ID fornecido
-      const response = await axios.put(`http://localhost:5000/users/${userId}`, { /* Dados do usuário para atualizar */ });
+      const response = await axios.put(`http://localhost:5000/users/${userId}`, {});
       console.log('Usuário atualizado com sucesso:', response.data);
-
-      // Redireciona para a página de perfil com os dados do usuário
       navigate(`/profile/${userId}`);
     } catch (error) {
       console.error('Erro ao atualizar usuário:', error);
@@ -38,16 +31,41 @@ const AdminUsersPage = () => {
 
   const handleDeleteUser = async (userId) => {
     try {
-      // Faz a requisição para excluir o usuário com o ID fornecido
       await axios.delete(`http://localhost:5000/users/${userId}`);
       console.log('Usuário excluído com sucesso:', userId);
-      // Remove o usuário da lista após a exclusão
       const updatedUsers = users.filter(user => user.id !== userId);
       setUsers(updatedUsers);
     } catch (error) {
       console.error('Erro ao excluir usuário:', error);
     }
   };
+
+  // Verifica se o usuário tem permissão de administrador com base nas informações do token
+  const isAdmin = () => {
+    // Obtenha as informações do token do local session
+    const token = localStorage.getItem('token');
+    if (!token) return false;
+    
+    // Decodifique o token para obter as informações do payload
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    console.log(payload)
+    // Verifique se o nível de acesso é 'admin'
+    return payload.nivel_acesso === 'admin';
+  };
+
+  // Configuração do interceptor para adicionar o token ao cabeçalho de todas as solicitações axios
+  axios.interceptors.request.use(
+    config => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      return config;
+    },
+    error => {
+      return Promise.reject(error);
+    }
+  );
 
   return (
     <div className="container mt-5">
@@ -68,8 +86,13 @@ const AdminUsersPage = () => {
               <td>{user.email}</td>
               <td>{user.nivel_acesso}</td>
               <td>
-                <button className="btn btn-primary me-2" onClick={() => handleUpdateUser(user.id)}>Atualizar</button>
-                <button className="btn btn-danger" onClick={() => handleDeleteUser(user.id)}>Excluir</button>
+                {/* Condicional para mostrar os botões com base no nível de acesso do usuário */}
+                {isAdmin() && (
+                  <>
+                    <button className="btn btn-primary me-2" onClick={() => handleUpdateUser(user.id)}>Atualizar</button>
+                    <button className="btn btn-danger" onClick={() => handleDeleteUser(user.id)}>Excluir</button>
+                  </>
+                )}
               </td>
             </tr>
           ))}

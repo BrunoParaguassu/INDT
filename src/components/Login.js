@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom'; // Importe useNavigate
+import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
     const [formData, setFormData] = useState({
@@ -8,7 +8,7 @@ const Login = () => {
         senha: ''
     });
     const [error, setError] = useState('');
-    const navigate = useNavigate(); // Use useNavigate para acessar a navegação
+    const navigate = useNavigate();
 
     const handleInputChange = (event) => {
         const { name, value } = event.target;
@@ -21,16 +21,14 @@ const Login = () => {
     const handleSubmit = async (event) => {
         event.preventDefault();
         try {
-            // Faz a requisição para fazer login
             const response = await axios.post('http://localhost:5000/login', {
                 email: formData.email,
                 senha: formData.senha
             });
-            // Se o login for bem-sucedido, redireciona para a página inicial
-            console.log('Login bem-sucedido:', response.data);
+            // Armazena o token JWT no armazenamento local do navegador
+            localStorage.setItem('token', response.data.access_token);
             setError('');
-            // Aqui você pode definir a lógica de redirecionamento para a página desejada após o login
-            navigate('/admin'); // Use navigate para redirecionar
+            navigate('/admin');
         } catch (error) {
             console.error('Erro ao fazer login:', error);
             setError('Credenciais inválidas. Por favor, verifique seu e-mail e senha.');
@@ -61,7 +59,7 @@ const Login = () => {
                                 <div className="mb-3">
                                     <label htmlFor="senha" className="form-label">Senha:</label>
                                     <input
-                                        type="senha"
+                                        type="password" // Corrigido de 'senha' para 'password'
                                         className="form-control"
                                         id="senha"
                                         name="senha"
